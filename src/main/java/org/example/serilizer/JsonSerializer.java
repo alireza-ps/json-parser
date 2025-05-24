@@ -1,11 +1,11 @@
 package org.example.serilizer;
 
+import org.example.annotation.RenameProperty;
+import org.example.annotation.SkipProperty;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class JsonSerializer {
 
@@ -14,6 +14,7 @@ public class JsonSerializer {
 
     public static String toJson(Object object) {
         if (object == null) return "null";
+
         if (isPrimitiveOrWrapperOrString(object.getClass())) return serializePrimitiveToString(object);
 
         Class<?> aClass = object.getClass();
@@ -30,17 +31,20 @@ public class JsonSerializer {
     }
 
     private static void formatFields(Object object, Field[] fields, StringBuilder json) {
-        for (int i = 0; i < fields.length; i++) {
-            Field field = fields[i];
+        Field[] filteredFields = Arrays.stream(fields)
+                .filter(field -> !field.isAnnotationPresent(SkipProperty.class))
+                .toArray(Field[]::new);
+        for (int i = 0; i < filteredFields.length; i++) {
+            Field field = filteredFields[i];
             field.setAccessible(true);
-            Object value = null;
+            Object value;
             try {
                 value = field.get(object);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
             serializeObject(json, field, value);
-            if (i != fields.length - 1) {
+            if (i != filteredFields.length - 1) {
                 json.append(", ");
             }
         }
@@ -48,12 +52,16 @@ public class JsonSerializer {
 
 
     private static void serializeObject(StringBuilder json, Field field, Object value) {
-        json.append("\"").append(field.getName()).append("\"").append(" : ");
+        String keyName = getFieldName(field);
+
+        json.append("\"").append(keyName).append("\"").append(" : ");
 
         if (value == null) {
             json.append("null");
         } else if (isPrimitiveOrWrapperOrString(value.getClass())) {
             json.append(serializePrimitiveToString(value));
+        } else if (isEnum(value)) {
+            json.append(serializeEnum(value));
         } else if (isListOrArray(value)) {
             json.append(serializeArrayOrList(value));
         } else if (value instanceof Map<?, ?> map) {
@@ -63,6 +71,20 @@ public class JsonSerializer {
             // Recursive call: assumes toJson(Object) builds JSON for this object.
             json.append(toJson(value));
         }
+    }
+
+    private static String serializeEnum(Object value) {
+        return "\"" + value + "\"";
+    }
+
+    private static boolean isEnum(Object value) {
+        return value != null && value.getClass().isEnum();
+    }
+
+    private static String getFieldName(Field field) {
+        return field.isAnnotationPresent(RenameProperty.class)
+                ? field.getAnnotation(RenameProperty.class).name()
+                : field.getName();
     }
 
     private static String serializeMap(Map<?, ?> map) {

@@ -1,4 +1,6 @@
 package org.example.record;
 
-public record Category(String title) {
+import org.example.annotation.RenameProperty;
+
+public record Category(@RenameProperty(name = "categoryTitle") String title) {
 }
