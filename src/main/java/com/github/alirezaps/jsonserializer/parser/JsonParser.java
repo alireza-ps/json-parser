@@ -95,7 +95,7 @@ public class JsonParser {
         }
     }
 
-    public String parseString() {
+    private String parseString() {
         expect('"', "Expected '\"' at the start of string");
         advance();
         StringBuilder sb = new StringBuilder();
