@@ -1,7 +1,7 @@
-package org.example.record;
+package com.github.alirezaps.jsonserializer.record;
 
-import org.example.annotation.RenameProperty;
-import org.example.annotation.SkipProperty;
+import com.github.alirezaps.jsonserializer.annotation.RenameProperty;
+import com.github.alirezaps.jsonserializer.annotation.SkipProperty;
 
 import java.util.List;
 import java.util.Map;

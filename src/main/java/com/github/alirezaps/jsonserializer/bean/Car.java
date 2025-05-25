@@ -1,8 +1,7 @@
-package org.example.bean;
+package com.github.alirezaps.jsonserializer.bean;
 
 
-import org.example.annotation.RenameProperty;
-import org.example.annotation.SkipProperty;
+import com.github.alirezaps.jsonserializer.annotation.RenameProperty;
 
 public class Car {
     public enum CarType {

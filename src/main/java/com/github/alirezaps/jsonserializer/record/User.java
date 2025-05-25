@@ -1,4 +1,4 @@
-package org.example.record;
+package com.github.alirezaps.jsonserializer.record;
 
 import java.util.List;
 

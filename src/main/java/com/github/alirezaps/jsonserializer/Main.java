@@ -1,15 +1,6 @@
-package org.example;
-
-import org.example.bean.Car;
-import org.example.record.Category;
-import org.example.record.Product;
-import org.example.record.Role;
-import org.example.serilizer.JsonSerializer;
-
-import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+package com.github.alirezaps.jsonserializer;
+import com.github.alirezaps.jsonserializer.bean.Car;
+import com.github.alirezaps.jsonserializer.serilizer.JsonSerializer;
 
 public class Main {
     public static void main(String[] args) {
