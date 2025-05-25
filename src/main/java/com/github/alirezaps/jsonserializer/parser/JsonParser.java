@@ -11,12 +11,17 @@ public class JsonParser {
         this.json = json.trim();
     }
 
-    public Map<String, String> parse() {
-        Map<String, String> result = new HashMap<>();
-
+    public Map<String, Object> parse() {
+        skipWhitespace();
         expect('{', "JSON must start with '{'");
         advance();
+
+        Map<String, Object> result = new HashMap<>();
         skipWhitespace();
+        if (peek() == '}') {
+            advance();
+            return result; // Return empty map if JSON object is empty
+        }
 
         while (peek() != '}') {
             String key = parseString();
@@ -24,7 +29,7 @@ public class JsonParser {
             expect(':', " Expected ':' after key");
             advance();
             skipWhitespace();
-            String value = parseString();
+            Object value = readValue();
             result.put(key, value);
             skipWhitespace();
 
@@ -38,6 +43,50 @@ public class JsonParser {
 
         advance();
         return result;
+    }
+
+    private Object readValue() {
+        char ch = peek();
+        if (ch == '"') return parseString();
+        else if (Character.isDigit(ch) || ch == '-') return parseNumber();
+        else if (ch == 't' || ch == 'f') return parseBoolean();
+        else if (ch == 'n') return parseNull();
+        else throw new RuntimeException("Unexpected start of value " + ch);
+    }
+
+    private Object parseNull() {
+        if (json.startsWith("null", index)) {
+            index += 4; //to go at end of null
+            return null;
+        }
+        throw new RuntimeException("Expected 'null' at index " + index);
+    }
+
+    private Boolean parseBoolean() {
+        if (json.startsWith("true", index)) {
+            index += 4; // to go at end of true
+            return Boolean.TRUE;
+        } else if (json.startsWith("false", index)) {
+            index += 5; // to go at end of false
+            return Boolean.FALSE;
+        }
+        throw new RuntimeException("Expected true or false at index " + index);
+    }
+
+    private Number parseNumber() {
+        int start = index;
+        if (peek() == '-')
+            advance();
+
+        while (index < json.length() && Character.isDigit(peek())) {
+            advance();
+            if (index < json.length() && peek() == '.') {
+                advance();
+                while (index < json.length() && Character.isDigit(peek())) advance();
+                return Double.parseDouble(json.substring(start, index));
+            }
+        }
+        return Long.parseLong(json.substring(start, index));
     }
 
     private void skipWhitespace() {
@@ -54,11 +103,14 @@ public class JsonParser {
             if (peek() == '\\') {
                 advance();
                 char escaped = peek();
-                if (escaped == '"' || escaped == '\\') {
-                    sb.append(escaped);
-                } else {
-                    throw new RuntimeException("Unsupported escape character");
-                }
+                char result = switch (escaped) {
+                    case '"' -> '"';
+                    case '\\' -> '\\';
+                    case 'n' -> '\n';
+                    case 't' -> '\t';
+                    default -> throw new RuntimeException("Unsupported escape character: \\" + escaped);
+                };
+                sb.append(result);
             } else {
                 sb.append(peek());
             }

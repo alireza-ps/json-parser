@@ -1,4 +1,4 @@
-package com.github.alirezaps.jsonserializer.serilizer;
+package com.github.alirezaps.jsonserializer.serializer;
 
 import com.github.alirezaps.jsonserializer.annotation.RenameProperty;
 import com.github.alirezaps.jsonserializer.annotation.SkipProperty;
