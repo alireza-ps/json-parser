@@ -24,6 +24,10 @@ public class JsonDeserializer {
 
     private Object convertType(Object value, Class<?> targetType) {
         if (value == null) return null;
+
+        if (targetType.isAssignableFrom(value.getClass()))
+            return value;
+
         if (targetType == byte.class || targetType == Byte.class)
             return ((Number) value).byteValue();
         else if (targetType == short.class || targetType == Short.class)
